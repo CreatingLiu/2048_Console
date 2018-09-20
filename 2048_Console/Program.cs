@@ -1,43 +1,66 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace liushifu.game.game2048_Console
 {
+    class SaveFile
+    {
+        int[,] num;
+        int score;
+        public SaveFile(int[,] num, int score)
+        {
+            this.num = num;
+            this.score = score;
+        }
+        public int[,] GetNum()
+        {
+            return num;
+        }
+        public int GetScore()
+        {
+            return score;
+        }
+    }
+
     class Program
     {
         const string loadPath = "2048save.dat";
 
+        static int score = 0;
+        static int lastScore = 0;
+
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            Console.Title = "2048小游戏-By:刘师傅 V0.0.2 alpha";
-            Console.SetWindowSize(68, 30);
-            Console.SetBufferSize(68, 30);
+            Console.Title = "2048小游戏-By:刘师傅 V0.0.3 alpha";
+            Console.SetWindowSize(68, 31);
+            Console.SetBufferSize(68, 31);
             Console.BackgroundColor = ConsoleColor.White;
             Console.ForegroundColor = ConsoleColor.Black;
 
         start:
             int[,] num = new int[4, 4];
             int[,] last = new int[4, 4];
+            score = 0;
+
             num = SetNewNum(num);
             num = SetNewNum(num);
+            //num = SetMyNum();
+
             last = CopyToB(num);
 
             RePaint(num, "", "");
 
             while (true)
             {
-                ConsoleKeyInfo k = Console.ReadKey();
+                ConsoleKeyInfo k = Console.ReadKey(true);
                 switch (k.Key)
                 {
                     case ConsoleKey.W:
                     case ConsoleKey.UpArrow:
                         last = CopyToB(num);
+                        lastScore = score;
                         num = SquareRot90(num, 3);
                         num = Merge(num);
                         num = SquareRot90(num, 1);
@@ -45,6 +68,7 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.S:
                     case ConsoleKey.DownArrow:
                         last = CopyToB(num);
+                        lastScore = score;
                         num = SquareRot90(num, 1);
                         num = Merge(num);
                         num = SquareRot90(num, 3);
@@ -52,11 +76,13 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.A:
                     case ConsoleKey.LeftArrow:
                         last = CopyToB(num);
+                        lastScore = score;
                         num = Merge(num);
                         break;
                     case ConsoleKey.D:
                     case ConsoleKey.RightArrow:
                         last = CopyToB(num);
+                        lastScore = score;
                         num = SquareRot90(num, 2);
                         num = Merge(num);
                         num = SquareRot90(num, 2);
@@ -67,24 +93,25 @@ namespace liushifu.game.game2048_Console
                         continue; ;
                     case ConsoleKey.Z:
                         num = CopyToB(last);
+                        score = lastScore;
                         RePaint(num, "", "");
                         continue;
                     case ConsoleKey.X:
-                        Save(num);
+                        Save(new SaveFile(num, score));
                         RePaint(num, "", "                             存档保存成功！");
                         continue;
                     case ConsoleKey.L:
-                        num = Load();
+                        SaveFile sf = Load();
+                        num = sf.GetNum();
+                        score = sf.GetScore();
                         RePaint(num, "", "                             读取存档成功！");
                         continue;
                     case ConsoleKey.R:
                         goto start;
                     case ConsoleKey.Q:
-                        Console.SetWindowSize(68, 30);
-                        RePaint(num, "", "");
+                        Console.SetWindowSize(68, 31);
                         continue;
                     default:
-                        RePaint(num, "", "");
                         continue;
                 }
 
@@ -92,17 +119,22 @@ namespace liushifu.game.game2048_Console
                 {
                     RePaint(num, "                               Game Over!", "                       请按“R”键重新开始游戏");
                     ConsoleKeyInfo r;
-                    do
+                    while (true)
                     {
-                        r = Console.ReadKey();
-                        RePaint(num, "                               Game Over!", "                       请按“R”键重新开始游戏");
-                    } while (r.Key != ConsoleKey.R);
-
+                        r = Console.ReadKey(true);
+                        if (r.Key == ConsoleKey.R)
+                        {
+                            break;
+                        }
+                    }
                     goto start;
                 }
                 else
                 {
-                    num = SetNewNum(num);
+                    if (!IsEquals(num, last))
+                    {
+                        num = SetNewNum(num);
+                    }
                     RePaint(num, "", "");
                 }
             }
@@ -111,6 +143,7 @@ namespace liushifu.game.game2048_Console
 
         public static bool CanMove(int[,] a)
         {
+            int s = score;
             bool res = false;
             int[,] b = CopyToB(a);
             b = Merge(b);
@@ -134,6 +167,7 @@ namespace liushifu.game.game2048_Console
             b = SquareRot90(b, -3);
             if (!IsEquals(a, b))
                 res = true;
+            score = s;
             return res;
         }
 
@@ -173,19 +207,21 @@ namespace liushifu.game.game2048_Console
         {
             for (int i = 0; i < a.GetLength(0); i++)
             {
-                int lastNum = 0;
                 int last_j = 0;
                 for (int j = 0; j < a.GetLength(1); j++)//合并
                 {
-                    if (lastNum != a[i, j] && a[i, j] != 0)
+                    if (a[i, j] != 0)
                     {
-                        lastNum = a[i, j];
-                        last_j = j;
-                    }
-                    else if (lastNum == a[i, j])
-                    {
-                        a[i, last_j] = 0;
-                        a[i, j] = lastNum + a[i, j];
+                        if (a[i, j] == a[i, last_j] && j != last_j)
+                        {
+                            score = score + a[i, j] + a[i, last_j];
+                            a[i, j] = a[i, j] + a[i, last_j];
+                            a[i, last_j] = 0;
+                        }
+                        else
+                        {
+                            last_j = j;
+                        }
                     }
                 }
                 last_j = 0;
@@ -309,7 +345,7 @@ namespace liushifu.game.game2048_Console
             Console.Write("\n");
             Console.WriteLine("    ┌────────────────────────────────────────────────────────────┐");
             Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │               2048小游戏   version:V0.0.2 alpha            │");
+            Console.WriteLine("    │               2048小游戏   version:V0.0.3 alpha            │");
             Console.WriteLine("    │                                                            │");
             Console.WriteLine("    │                      刘师出品，必属精品                    │");
             Console.WriteLine("    │                                                            │");
@@ -318,6 +354,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
             Console.WriteLine(tip1);
             Console.WriteLine(tip2);
+            Console.WriteLine("                               得分：{0}", score);
             Console.WriteLine("            ┏━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓");
             Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
             Console.WriteLine("            ┃" + b[0, 0] + "┃" + b[0, 1] + "┃" + b[0, 2] + "┃" + b[0, 3] + "┃");
@@ -337,7 +374,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("            ┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┛");
         }
 
-        public static void Save(int[,] a)
+        public static void Save(SaveFile sf)
         {
             string b = "";
 
@@ -345,17 +382,19 @@ namespace liushifu.game.game2048_Console
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    b = b + a[i, j] + "|";
+                    b = b + sf.GetNum()[i, j] + "|";
                 }
             }
 
-            b = b.Remove(b.Length - 1);
+            b = b + sf.GetScore();
+
+            //b = b.Remove(b.Length - 1);
 
             File.WriteAllText(loadPath, b);
 
         }
 
-        public static int[,] Load()
+        public static SaveFile Load()
         {
             if (!File.Exists(loadPath))
             {
@@ -373,7 +412,8 @@ namespace liushifu.game.game2048_Console
                     d[i, j] = Convert.ToInt32(c[i * 4 + j]);
                 }
             }
-            return d;
+            int score = Convert.ToInt32(c[c.Length - 1]);
+            return new SaveFile(d, score);
         }
 
         public static void Help()
@@ -410,7 +450,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    │                      刘师出品，必属精品！                  │");
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
 
-            Console.ReadKey();
+            Console.ReadKey(true);
         }
 
         public static int[,] SetNewNum(int[,] a)
@@ -420,6 +460,12 @@ namespace liushifu.game.game2048_Console
             if (rp != null)
                 a[rp.X, rp.Y] = 2;
             return a;
+        }
+
+        public static int[,] SetMyNum()
+        {
+            int[,] i = { { 2, 4, 8, 16 }, { 32, 64, 128, 256 }, { 512, 1024, 2048, 4096 }, { 8192, 16384, 32768, 0 } };
+            return i;
         }
     }
 }

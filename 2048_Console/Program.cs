@@ -41,13 +41,13 @@ namespace liushifu.game.game2048_Console
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            Console.Title = "2048小游戏-By:刘师傅 "+version;
+            Console.Title = "2048小游戏-By:刘师傅 " + version;
             Console.SetWindowSize(68, 31);
             Console.SetBufferSize(68, 31);
             Console.BackgroundColor = ConsoleColor.White;
             Console.ForegroundColor = ConsoleColor.Black;
             Thread autoRePrint;
-
+            long lastKeyTick = 0;
 
         start:
             num = new int[4, 4];
@@ -57,7 +57,7 @@ namespace liushifu.game.game2048_Console
             score = 0;
 
             autoRePrint = new Thread(new ThreadStart(AutoRePrint));
-            
+
             num = SetNewNum(num);
             num = SetNewNum(num);
             //num = SetMyNum();
@@ -68,14 +68,21 @@ namespace liushifu.game.game2048_Console
 
             while (true)
             {
+                waitKey:
                 ConsoleKeyInfo k = Console.ReadKey(true);
+                if (DateTime.Now.Ticks-lastKeyTick< 500000)
+                {
+                    lastKeyTick = DateTime.Now.Ticks;
+                    goto waitKey;
+                }
+                lastKeyTick = DateTime.Now.Ticks;
                 if (!isStart)
                 {
                     time = DateTime.Now.Ticks;
                     autoRePrint.Start();
                     isStart = true;
                 }
-                if (tip1!=""||tip2!="")
+                if (tip1 != "" || tip2 != "")
                 {
                     tip1 = "";
                     tip2 = "";
@@ -381,7 +388,7 @@ namespace liushifu.game.game2048_Console
             Console.Write("\n");
             Console.WriteLine("    ┌────────────────────────────────────────────────────────────┐");
             Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │               2048小游戏   version:{0}            │",version);
+            Console.WriteLine("    │               2048小游戏   version:{0}            │", version);
             Console.WriteLine("    │                                                            │");
             Console.WriteLine("    │                      刘师出品，必属精品                    │");
             Console.WriteLine("    │                                                            │");
@@ -390,7 +397,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
             Console.WriteLine(tip1);
             Console.WriteLine(tip2);
-            Console.WriteLine("                   得分：{0}            时间：{1}秒", score,isStart?((DateTime.Now.Ticks-time)/ 10000000) +"":"0");
+            Console.WriteLine("                   得分：{0}            时间：{1}秒", score, isStart ? ((DateTime.Now.Ticks - time) / 10000000) + "" : "0");
             Console.WriteLine("            ┏━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓");
             Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
             Console.WriteLine("            ┃" + b[0, 0] + "┃" + b[0, 1] + "┃" + b[0, 2] + "┃" + b[0, 3] + "┃");
@@ -423,8 +430,6 @@ namespace liushifu.game.game2048_Console
             }
 
             b = b + sf.GetScore();
-
-            //b = b.Remove(b.Length - 1);
 
             File.WriteAllText(loadPath, b);
 
@@ -482,7 +487,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    │                      请按任意键回到游戏                    │");
             Console.WriteLine("    │                                                            │");
             Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                 2048    version {0}               │",version);
+            Console.WriteLine("    │                 2048    version {0}               │", version);
             Console.WriteLine("    │                      刘师出品，必属精品！                  │");
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
 
@@ -500,7 +505,7 @@ namespace liushifu.game.game2048_Console
 
         public static void AutoRePrint()
         {
-            while(true)
+            while (true)
             {
                 RePaint(num);
                 Thread.Sleep(1000);

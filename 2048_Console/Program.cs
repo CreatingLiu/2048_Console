@@ -1,13 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Threading;
 
 namespace liushifu.game.game2048_Console
 {
     class SaveFile
     {
-        int[,] num;
-        int score;
+        readonly int[,] num;
+        readonly int score;
         public SaveFile(int[,] num, int score)
         {
             this.num = num;
@@ -26,35 +27,59 @@ namespace liushifu.game.game2048_Console
     class Program
     {
         const string loadPath = "2048save.dat";
+        const string version = "V0.0.3 alpha";
 
         static int score = 0;
         static int lastScore = 0;
+        static bool isStart = false;
+        static long time;
+        static int[,] num;
+
+        static string tip1 = "";
+        static string tip2 = "";
 
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            Console.Title = "2048小游戏-By:刘师傅 V0.0.3 alpha";
+            Console.Title = "2048小游戏-By:刘师傅 "+version;
             Console.SetWindowSize(68, 31);
             Console.SetBufferSize(68, 31);
             Console.BackgroundColor = ConsoleColor.White;
             Console.ForegroundColor = ConsoleColor.Black;
+            Thread autoRePrint;
+
 
         start:
-            int[,] num = new int[4, 4];
+            num = new int[4, 4];
             int[,] last = new int[4, 4];
+
+            isStart = false;
             score = 0;
 
+            autoRePrint = new Thread(new ThreadStart(AutoRePrint));
+            
             num = SetNewNum(num);
             num = SetNewNum(num);
             //num = SetMyNum();
 
             last = CopyToB(num);
 
-            RePaint(num, "", "");
+            RePaint(num);
 
             while (true)
             {
                 ConsoleKeyInfo k = Console.ReadKey(true);
+                if (!isStart)
+                {
+                    time = DateTime.Now.Ticks;
+                    autoRePrint.Start();
+                    isStart = true;
+                }
+                if (tip1!=""||tip2!="")
+                {
+                    tip1 = "";
+                    tip2 = "";
+                }
                 switch (k.Key)
                 {
                     case ConsoleKey.W:
@@ -88,25 +113,31 @@ namespace liushifu.game.game2048_Console
                         num = SquareRot90(num, 2);
                         break;
                     case ConsoleKey.H:
+                        autoRePrint.Abort();
                         Help();
-                        RePaint(num, "", "");
+                        RePaint(num);
+                        autoRePrint = new Thread(new ThreadStart(AutoRePrint));
+                        autoRePrint.Start();
                         continue; ;
                     case ConsoleKey.Z:
                         num = CopyToB(last);
                         score = lastScore;
-                        RePaint(num, "", "");
+                        RePaint(num);
                         continue;
                     case ConsoleKey.X:
                         Save(new SaveFile(num, score));
-                        RePaint(num, "", "                             存档保存成功！");
+                        tip2 = "                             存档保存成功！";
+                        RePaint(num);
                         continue;
                     case ConsoleKey.L:
                         SaveFile sf = Load();
                         num = sf.GetNum();
                         score = sf.GetScore();
-                        RePaint(num, "", "                             读取存档成功！");
+                        tip2 = "                             读取存档成功！";
+                        RePaint(num);
                         continue;
                     case ConsoleKey.R:
+                        autoRePrint.Abort();
                         goto start;
                     case ConsoleKey.Q:
                         Console.SetWindowSize(68, 31);
@@ -117,7 +148,10 @@ namespace liushifu.game.game2048_Console
 
                 if (!CanMove(num))
                 {
-                    RePaint(num, "                               Game Over!", "                       请按“R”键重新开始游戏");
+                    tip1 = "                               Game Over!";
+                    tip2 = "                       请按“R”键重新开始游戏";
+                    RePaint(num);
+                    autoRePrint.Abort();
                     ConsoleKeyInfo r;
                     while (true)
                     {
@@ -127,6 +161,8 @@ namespace liushifu.game.game2048_Console
                             break;
                         }
                     }
+                    tip1 = "";
+                    tip2 = "";
                     goto start;
                 }
                 else
@@ -135,7 +171,7 @@ namespace liushifu.game.game2048_Console
                     {
                         num = SetNewNum(num);
                     }
-                    RePaint(num, "", "");
+                    RePaint(num);
                 }
             }
         }
@@ -300,7 +336,7 @@ namespace liushifu.game.game2048_Console
             return lstP[rnd];
         }
 
-        public static void RePaint(int[,] a, string tip1, string tip2)
+        public static void RePaint(int[,] a)
         {
             string[,] b = new string[4, 4];
             for (int i = 0; i < 4; i++)
@@ -345,7 +381,7 @@ namespace liushifu.game.game2048_Console
             Console.Write("\n");
             Console.WriteLine("    ┌────────────────────────────────────────────────────────────┐");
             Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │               2048小游戏   version:V0.0.3 alpha            │");
+            Console.WriteLine("    │               2048小游戏   version:{0}            │",version);
             Console.WriteLine("    │                                                            │");
             Console.WriteLine("    │                      刘师出品，必属精品                    │");
             Console.WriteLine("    │                                                            │");
@@ -354,7 +390,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
             Console.WriteLine(tip1);
             Console.WriteLine(tip2);
-            Console.WriteLine("                               得分：{0}", score);
+            Console.WriteLine("                   得分：{0}            时间：{1}秒", score,isStart?((DateTime.Now.Ticks-time)/ 10000000) +"":"0");
             Console.WriteLine("            ┏━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓");
             Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
             Console.WriteLine("            ┃" + b[0, 0] + "┃" + b[0, 1] + "┃" + b[0, 2] + "┃" + b[0, 3] + "┃");
@@ -446,7 +482,7 @@ namespace liushifu.game.game2048_Console
             Console.WriteLine("    │                      请按任意键回到游戏                    │");
             Console.WriteLine("    │                                                            │");
             Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                 2048    version 0.0.2 alpha                │");
+            Console.WriteLine("    │                 2048    version {0}               │",version);
             Console.WriteLine("    │                      刘师出品，必属精品！                  │");
             Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
 
@@ -460,6 +496,15 @@ namespace liushifu.game.game2048_Console
             if (rp != null)
                 a[rp.X, rp.Y] = 2;
             return a;
+        }
+
+        public static void AutoRePrint()
+        {
+            while(true)
+            {
+                RePaint(num);
+                Thread.Sleep(1000);
+            }
         }
 
         public static int[,] SetMyNum()

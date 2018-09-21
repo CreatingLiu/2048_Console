@@ -7,20 +7,14 @@ namespace liushifu.game.game2048_Console
 {
     class SaveFile
     {
-        readonly int[,] num;
-        readonly int score;
-        public SaveFile(int[,] num, int score)
+        public int[,] Num { get; }
+        public int Score { get; }
+        public long Time { get; }
+        public SaveFile(int[,] num, int score, long time)
         {
-            this.num = num;
-            this.score = score;
-        }
-        public int[,] GetNum()
-        {
-            return num;
-        }
-        public int GetScore()
-        {
-            return score;
+            Num = num;
+            Score = score;
+            Time = time;
         }
     }
 
@@ -33,6 +27,7 @@ namespace liushifu.game.game2048_Console
         static int lastScore = 0;
         static bool isStart = false;
         static long time;
+        static long lastTime;
         static int[,] num;
 
         static string tip1 = "";
@@ -68,14 +63,16 @@ namespace liushifu.game.game2048_Console
 
             while (true)
             {
-                waitKey:
-                ConsoleKeyInfo k = Console.ReadKey(true);
-                if (DateTime.Now.Ticks-lastKeyTick< 500000)
+                ConsoleKeyInfo k;
+                while (true)
                 {
+                    k = Console.ReadKey(true);
+                    long x = DateTime.Now.Ticks - lastKeyTick;
                     lastKeyTick = DateTime.Now.Ticks;
-                    goto waitKey;
+                    if (x > 500000)
+                        break;
                 }
-                lastKeyTick = DateTime.Now.Ticks;
+
                 if (!isStart)
                 {
                     time = DateTime.Now.Ticks;
@@ -92,6 +89,7 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.W:
                     case ConsoleKey.UpArrow:
                         last = CopyToB(num);
+                        lastTime = time;
                         lastScore = score;
                         num = SquareRot90(num, 3);
                         num = Merge(num);
@@ -100,6 +98,7 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.S:
                     case ConsoleKey.DownArrow:
                         last = CopyToB(num);
+                        lastTime = time;
                         lastScore = score;
                         num = SquareRot90(num, 1);
                         num = Merge(num);
@@ -108,6 +107,7 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.A:
                     case ConsoleKey.LeftArrow:
                         last = CopyToB(num);
+                        lastTime = time;
                         lastScore = score;
                         num = Merge(num);
                         break;
@@ -115,6 +115,7 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.RightArrow:
                         last = CopyToB(num);
                         lastScore = score;
+                        lastTime = time;
                         num = SquareRot90(num, 2);
                         num = Merge(num);
                         num = SquareRot90(num, 2);
@@ -129,17 +130,22 @@ namespace liushifu.game.game2048_Console
                     case ConsoleKey.Z:
                         num = CopyToB(last);
                         score = lastScore;
+                        time = lastTime;
                         RePaint(num);
                         continue;
                     case ConsoleKey.X:
-                        Save(new SaveFile(num, score));
+                        Save(new SaveFile(num, score, DateTime.Now.Ticks - time));
                         tip2 = "                             存档保存成功！";
                         RePaint(num);
                         continue;
                     case ConsoleKey.L:
                         SaveFile sf = Load();
-                        num = sf.GetNum();
-                        score = sf.GetScore();
+                        num =CopyToB(sf.Num);
+                        last = CopyToB(sf.Num);
+                        lastScore = sf.Score;
+                        lastTime = sf.Time;
+                        score = sf.Score;
+                        time = DateTime.Now.Ticks - sf.Time;
                         tip2 = "                             读取存档成功！";
                         RePaint(num);
                         continue;
@@ -425,11 +431,11 @@ namespace liushifu.game.game2048_Console
             {
                 for (int j = 0; j < 4; j++)
                 {
-                    b = b + sf.GetNum()[i, j] + "|";
+                    b = b + sf.Num[i, j] + "|";
                 }
             }
 
-            b = b + sf.GetScore();
+            b = b + sf.Score + sf.Time;
 
             File.WriteAllText(loadPath, b);
 
@@ -453,8 +459,9 @@ namespace liushifu.game.game2048_Console
                     d[i, j] = Convert.ToInt32(c[i * 4 + j]);
                 }
             }
-            int score = Convert.ToInt32(c[c.Length - 1]);
-            return new SaveFile(d, score);
+            int score = Convert.ToInt32(c[c.Length - 2]);
+            long time = Convert.ToInt64(c[c.Length - 1]);
+            return new SaveFile(d, score, time);
         }
 
         public static void Help()

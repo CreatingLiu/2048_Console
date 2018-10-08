@@ -21,7 +21,7 @@ namespace liushifu.game.game2048_Console
     class Program
     {
         const string loadPath = "2048save.dat";
-        const string version = "V0.0.3 alpha";
+        const string version = "V0.0.4 alpha";
 
         static int score = 0;
         static int lastScore = 0;
@@ -36,7 +36,7 @@ namespace liushifu.game.game2048_Console
         static void Main(string[] args)
         {
             Console.CursorVisible = false;
-            Console.Title = "2048小游戏-By:刘师傅 " + version;
+            Console.Title = "2048小游戏-By:阿国 " + version;
             Console.SetWindowSize(68, 31);
             Console.SetBufferSize(68, 31);
             Console.BackgroundColor = ConsoleColor.White;
@@ -135,7 +135,7 @@ namespace liushifu.game.game2048_Console
                         continue;
                     case ConsoleKey.X:
                         Save(new SaveFile(num, score, DateTime.Now.Ticks - time));
-                        tip2 = "                             存档保存成功！";
+                        tip2 = "                           存档保存成功！";
                         RePaint(num);
                         continue;
                     case ConsoleKey.L:
@@ -146,7 +146,7 @@ namespace liushifu.game.game2048_Console
                         lastTime = sf.Time;
                         score = sf.Score;
                         time = DateTime.Now.Ticks - sf.Time;
-                        tip2 = "                             读取存档成功！";
+                        tip2 = "                           读取存档成功！";
                         RePaint(num);
                         continue;
                     case ConsoleKey.R:
@@ -161,8 +161,8 @@ namespace liushifu.game.game2048_Console
 
                 if (!CanMove(num))
                 {
-                    tip1 = "                               Game Over!";
-                    tip2 = "                       请按“R”键重新开始游戏";
+                    tip1 = "                             Game Over!";
+                    tip2 = "                     请按“R”键重新开始游戏";
                     RePaint(num);
                     autoRePrint.Abort();
                     ConsoleKeyInfo r;
@@ -359,31 +359,31 @@ namespace liushifu.game.game2048_Console
                     switch (a[i, j])
                     {
                         case 0:
-                            b[i, j] = "          ";
+                            b[i, j] = "         ";
                             break;
                         case 2:
                         case 4:
                         case 8:
-                            b[i, j] = "     " + a[i, j].ToString() + "    ";
+                            b[i, j] = "    " + a[i, j].ToString() + "    ";
                             break;
                         case 16:
                         case 32:
                         case 64:
-                            b[i, j] = "    " + a[i, j].ToString() + "    ";
+                            b[i, j] = "   " + a[i, j].ToString() + "    ";
                             break;
                         case 128:
                         case 256:
                         case 512:
-                            b[i, j] = "    " + a[i, j].ToString() + "   ";
+                            b[i, j] = "   " + a[i, j].ToString() + "   ";
                             break;
                         case 1024:
                         case 2048:
                         case 4096:
                         case 8192:
-                            b[i, j] = "   " + a[i, j].ToString() + "   ";
+                            b[i, j] = "  " + a[i, j].ToString() + "   ";
                             break;
                         default:
-                            b[i, j] = "   " + a[i, j].ToString() + "  ";
+                            b[i, j] = "  " + a[i, j].ToString() + "  ";
                             break;
                     }
                 }
@@ -392,35 +392,35 @@ namespace liushifu.game.game2048_Console
 
             Console.Clear();
             Console.Write("\n");
-            Console.WriteLine("    ┌────────────────────────────────────────────────────────────┐");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │               2048小游戏   version:{0}            │", version);
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │                      刘师出品，必属精品                    │");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │                       按“H”键显示帮助                    │");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
+            Console.WriteLine("    ┌─────────────────────────────────────────────────────┐");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │           2048小游戏   version:{0}         │", version);
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │                    按“H”键显示帮助                │");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    └─────────────────────────────────────────────────────┘");
             Console.WriteLine(tip1);
             Console.WriteLine(tip2);
-            Console.WriteLine("                   得分：{0}            时间：{1}秒", score, isStart ? ((DateTime.Now.Ticks - time) / 10000000) + "" : "0");
-            Console.WriteLine("            ┏━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┳━━━━━━━━━━┓");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┃" + b[0, 0] + "┃" + b[0, 1] + "┃" + b[0, 2] + "┃" + b[0, 3] + "┃");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┃" + b[1, 0] + "┃" + b[1, 1] + "┃" + b[1, 2] + "┃" + b[1, 3] + "┃");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┃" + b[2, 0] + "┃" + b[2, 1] + "┃" + b[2, 2] + "┃" + b[2, 3] + "┃");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┣━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━╋━━━━━━━━━━┫");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┃" + b[3, 0] + "┃" + b[3, 1] + "┃" + b[3, 2] + "┃" + b[3, 3] + "┃");
-            Console.WriteLine("            ┃          ┃          ┃          ┃          ┃");
-            Console.WriteLine("            ┗━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┻━━━━━━━━━━┛");
+            Console.WriteLine("                 得分：{0}            时间：{1}秒", score, isStart ? ((DateTime.Now.Ticks - time) / 10000000) + "" : "0");
+            Console.WriteLine("          ┏━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┳━━━━━━━━━┓");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┃" + b[0, 0] + "┃" + b[0, 1] + "┃" + b[0, 2] + "┃" + b[0, 3] + "┃");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┣━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━┫");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┃" + b[1, 0] + "┃" + b[1, 1] + "┃" + b[1, 2] + "┃" + b[1, 3] + "┃");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┣━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━┫");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┃" + b[2, 0] + "┃" + b[2, 1] + "┃" + b[2, 2] + "┃" + b[2, 3] + "┃");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┣━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━╋━━━━━━━━━┫");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┃" + b[3, 0] + "┃" + b[3, 1] + "┃" + b[3, 2] + "┃" + b[3, 3] + "┃");
+            Console.WriteLine("          ┃         ┃         ┃         ┃         ┃");
+            Console.WriteLine("          ┗━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┻━━━━━━━━━┛");
         }
 
         public static void Save(SaveFile sf)
@@ -469,34 +469,34 @@ namespace liushifu.game.game2048_Console
             Console.Clear();
 
             Console.Write("\n");
-            Console.WriteLine("    ┌────────────────────────────────────────────────────────────┐");
-            Console.WriteLine("    │                        2048游戏帮助                        │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                          按键提示                          │");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │     ↑↓←→、WASD：游戏操作                               │");
-            Console.WriteLine("    │                  R：重玩                                   │");
-            Console.WriteLine("    │                  Z：回到上一步（只能撤销一次）             │");
-            Console.WriteLine("    │                  X：保存（只能保存一个存档）               │");
-            Console.WriteLine("    │                  L：加载存档                               │");
-            Console.WriteLine("    │                  Q：重绘窗口                               │");
-            Console.WriteLine("    │                     如果显示出现问题请按此键               │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │         请勿改变游戏窗口大小，否则显示将会出现异常         │");
-            Console.WriteLine("    │         如果不小心导致显示出现问题请按“Q”键重置          │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                    请切换至英文输入法操作                  │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │         存档保存在游戏根目录下，文件名为2048save.dat       │");
-            Console.WriteLine("    │                可根据自己需要备份或发送给好友              │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    │                      请按任意键回到游戏                    │");
-            Console.WriteLine("    │                                                            │");
-            Console.WriteLine("    ├────────────────────────────────────────────────────────────┤");
-            Console.WriteLine("    │                 2048    version {0}               │", version);
-            Console.WriteLine("    │                      刘师出品，必属精品！                  │");
-            Console.WriteLine("    └────────────────────────────────────────────────────────────┘");
+            Console.WriteLine("    ┌─────────────────────────────────────────────────────┐");
+            Console.WriteLine("    │                   2048游戏帮助                      │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │                     按键提示                        │");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │  ↑↓←→、WASD：游戏操作                           │");
+            Console.WriteLine("    │               R：重玩                               │");
+            Console.WriteLine("    │               Z：回到上一步（只能撤销一次）         │");
+            Console.WriteLine("    │               X：保存（只能保存一个存档）           │");
+            Console.WriteLine("    │               L：加载存档                           │");
+            Console.WriteLine("    │               Q：重绘窗口                           │");
+            Console.WriteLine("    │                  如果显示出现问题请按此键           │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │     请勿改变游戏窗口大小，否则显示将会出现异常      │");
+            Console.WriteLine("    │     如果不小心导致显示出现问题请按“Q”键重置       │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │                请切换至英文输入法操作               │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │     存档保存在游戏根目录下，文件名为2048save.dat    │");
+            Console.WriteLine("    │            可根据自己需要备份或发送给好友           │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    │                  请按任意键回到游戏                 │");
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    ├─────────────────────────────────────────────────────┤");
+            Console.WriteLine("    │             2048    version {0}            │", version);
+            Console.WriteLine("    │                                                     │");
+            Console.WriteLine("    └─────────────────────────────────────────────────────┘");
 
             Console.ReadKey(true);
         }
